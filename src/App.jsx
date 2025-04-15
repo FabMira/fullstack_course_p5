@@ -6,7 +6,8 @@ import loginService from './services/login'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [notificationMessage, setNotificationMessage] = useState(null)
+  const [notificationClass, setNotificationClass] = useState('notification')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
@@ -32,9 +33,11 @@ const App = () => {
         JSON.stringify(user)
       )
     } catch (error) {
-      setErrorMessage('Wrong credentials');
+      setNotificationMessage('Wrong credentials');
+      setNotificationClass('error')
       setTimeout(() => {
-        setErrorMessage(null)
+        setNotificationMessage(null)
+        setNotificationClass('notification')
       }, 5000);
     }
   }
@@ -122,10 +125,16 @@ const App = () => {
         author: '',
         url: ''
       })
-    } catch (error) {
-      setErrorMessage('Error saving new blog');
+      setNotificationMessage(`a new blog ${newBlog.title}, by ${newBlog.author} added.`)
       setTimeout(() => {
-        setErrorMessage(null)
+        setNotificationMessage(null)
+      }, 5000)
+    } catch (error) {
+      setNotificationMessage('Error saving new blog');
+      setNotificationClass('error')
+      setTimeout(() => {
+        setNotificationMessage(null)
+        setNotificationClass('notification')
       }, 5000);
     }
     
@@ -134,7 +143,7 @@ const App = () => {
   return (
     <div>
 
-      <Notification message={errorMessage} />
+      <Notification message={notificationMessage} className={notificationClass} />
 
       {!user && LoginForm()}
       {user && <div>
