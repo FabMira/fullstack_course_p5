@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Blog, Notification } from './components'
+import { Blog, Notification, BlogForm } from './components'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -10,6 +10,11 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
+  const [formData, setFormData] = useState({
+    title : '',
+    author: '',
+    url   : ''
+  })
 
   const handleLogin = async (event) => {
     event.preventDefault()
@@ -18,6 +23,7 @@ const App = () => {
       const user = await loginService.login({
         username, password
       })
+      blogService.setToken(user.token);
       setUser(user);
       setUsername('');
       setPassword('');
@@ -32,7 +38,7 @@ const App = () => {
       }, 5000);
     }
   }
-  
+
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -58,7 +64,7 @@ const App = () => {
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
-    if ( loggedUserJSON ) {
+    if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
       // blogService.setToken(user.token)
@@ -71,50 +77,76 @@ const App = () => {
       <form onSubmit={handleLogin}>
         <div>
           username
-            <input
+          <input
             type="text"
             value={username}
             name="Username"
             onChange={({ target }) => setUsername(target.value)}
-            />
+          />
         </div>
         <div>
           password
-            <input
+          <input
             type="password"
             value={password}
             name="Password"
             onChange={({ target }) => setPassword(target.value)}
-            />
+          />
         </div>
         <button type="submit">login</button>
-      </form> 
+      </form>
     </div>
   )
 
-  // const blogsForm = () => (
-  //   <form onSubmit={addBlog}>
-  //     <input
-  //       value={newBlog}
-  //       onChange={handleBlogChange}
-  //     />
-  //     <button type="submit">save</button>
-  //   </form>  
-  // )
+  const handleBlogChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }))
+  }
 
+  const addBlog = async (event) => {
+    event.preventDefault()
+    const newBlog = {
+      title: formData.title,
+      author: formData.author,
+      url: formData.url
+    }
+
+    try {
+      const req = await blogService.create(newBlog)
+      setBlogs(blogs.concat(req))
+      setFormData({
+        title: '',
+        author: '',
+        url: ''
+      })
+    } catch (error) {
+      setErrorMessage('Error saving new blog');
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000);
+    }
+    
+  }
 
   return (
     <div>
-      {/* <h1>Blogs</h1> */}
-      
+
       <Notification message={errorMessage} />
 
-      {user === null 
-        ? LoginForm() 
-        : <div>
-            <h2>Blogs</h2>
-            {blogs.map(blog => <Blog key={blog.id} blog={blog} />)}
-          </div>
+      {!user && LoginForm()}
+      {user && <div>
+          <h2>Blogs</h2>
+          <p>{user.name} logged in</p>
+          <BlogForm
+            onSubmit={addBlog}
+            formData={formData}
+            handleChange={handleBlogChange}
+          />
+          {blogs.map(blog => <Blog key={blog.id} blog={blog} />)}
+        </div>
       }
 
     </div>
