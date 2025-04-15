@@ -21,6 +21,10 @@ const App = () => {
       setUser(user);
       setUsername('');
       setPassword('');
+      window.localStorage.setItem(
+        'loggedBlogAppUser',
+        JSON.stringify(user)
+      )
     } catch (error) {
       setErrorMessage('Wrong credentials');
       setTimeout(() => {
@@ -39,6 +43,26 @@ const App = () => {
       }
     }
     fetchBlogs()
+  }, [])
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      window.localStorage.clear();
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  }, [])
+
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
+    if ( loggedUserJSON ) {
+      const user = JSON.parse(loggedUserJSON)
+      setUser(user)
+      // blogService.setToken(user.token)
+    }
   }, [])
 
   const LoginForm = () => (
