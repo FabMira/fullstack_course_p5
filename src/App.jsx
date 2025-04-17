@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Blog, BlogForm, LoginForm, Notification  } from './components'
+import { Blog, BlogForm, LoginForm, Notification } from './components'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import Toggable from './components/Toggable'
 
 
 const App = () => {
@@ -12,9 +13,9 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [formData, setFormData] = useState({
-    title : '',
+    title: '',
     author: '',
-    url   : ''
+    url: ''
   })
   const [loginVisible, setLoginVisible] = useState(false)
 
@@ -99,27 +100,6 @@ const App = () => {
     )
   }
 
-  const blogForm = () => {
-    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
-    const showWhenVisible = { display: loginVisible ? '' : 'none' }
-
-    return (
-      <div>
-        <div style={hideWhenVisible}>
-          <button onClick={() => setLoginVisible(true)}>New blog</button>
-        </div>
-        <div style={showWhenVisible}>
-        <p>{user.name} logged in</p>
-          <BlogForm
-            onSubmit={addBlog}
-            formData={formData}
-            handleChange={handleBlogChange}
-          />
-          <button onClick={() => setLoginVisible(false)}>Cancel</button>
-        </div>
-      </div>
-    )
-  }
 
   const handleBlogChange = (event) => {
     const { name, value } = event.target;
@@ -157,7 +137,7 @@ const App = () => {
         setNotificationClass('notification')
       }, 5000);
     }
-    
+
   }
 
   return (
@@ -166,7 +146,17 @@ const App = () => {
 
       <Notification message={notificationMessage} className={notificationClass} />
 
-      {!user ? loginForm() : blogForm()}
+      {!user && loginForm()}
+      {user && <div>
+        <Toggable buttonLabel="New blog">
+          <BlogForm
+            onSubmit={addBlog}
+            formData={formData}
+            handleChange={handleBlogChange}
+          />
+        </Toggable>
+      </div>
+      }
 
       {blogs.map(blog => <Blog key={blog.id} blog={blog} />)}
 
