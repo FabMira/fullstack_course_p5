@@ -102,7 +102,6 @@ const App = () => {
     )
   }
 
-
   const handleBlogChange = (event) => {
     const { name, value } = event.target;
     setFormData((prevData) => ({
@@ -142,6 +141,35 @@ const App = () => {
 
   }
 
+  const updateBlog = async (blog) => {
+    const blogToUpdate = {
+      user: blog.user.id,
+      likes: blog.likes + 1,
+      author: blog.author,
+      title: blog.title,
+      url: blog.url
+    }
+    try {
+      await blogService.update(blogToUpdate, blog.id)
+      const blogs = await blogService.getAll();
+      setBlogs(blogs);
+      setNotificationMessage(`The blog ${blog.title}, was updated.`)
+      setTimeout(() => {
+        setNotificationMessage(null)
+      }, 5000)
+    } catch (error) {
+      setNotificationMessage(`Error updating the blog ${blog.title}`);
+      setNotificationClass('error')
+      setTimeout(() => {
+        setNotificationMessage(null)
+        setNotificationClass('notification')
+      }, 5000);
+    }
+    
+    
+    
+  } 
+
   return (
     <div>
       <h1>Blogs</h1>
@@ -152,7 +180,7 @@ const App = () => {
       {user && <div>
         <Toggable buttonLabel="New blog">
           <BlogForm
-            onSubmit={addBlog}
+            handleSubmit={addBlog}
             formData={formData}
             handleChange={handleBlogChange}
           />
@@ -160,7 +188,7 @@ const App = () => {
       </div>
       }
 
-      {blogs.map(blog => <Blog key={blog.id} blog={blog} user={user} />)}
+      {blogs.map(blog => <Blog key={blog.id} blog={blog} handleSubmit={updateBlog} />)}
 
     </div>
   )

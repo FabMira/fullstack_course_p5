@@ -1,9 +1,9 @@
-const BlogForm = ({ onSubmit, handleChange, formData }) => {
+const BlogForm = ({ handleSubmit, handleChange, formData }) => {
     return (
         <div>
             <h2>Create a new Blog</h2>
 
-            <form onSubmit={onSubmit}>
+            <form onSubmit={handleSubmit}>
                 <div>
                     <label>Title:</label>
                     <input 
