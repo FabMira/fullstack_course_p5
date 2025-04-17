@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Blog, Notification, BlogForm } from './components'
+import { Blog, BlogForm, LoginForm, Notification  } from './components'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -16,9 +16,11 @@ const App = () => {
     author: '',
     url   : ''
   })
+  const [loginVisible, setLoginVisible] = useState(false)
 
   const handleLogin = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
+    setLoginVisible(false);
     // Handle login logic here
     try {
       const user = await loginService.login({
@@ -74,32 +76,50 @@ const App = () => {
     }
   }, [])
 
-  const LoginForm = () => (
-    <div>
-      <h2>Log in to application</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          username
-          <input
-            type="text"
-            value={username}
-            name="Username"
-            onChange={({ target }) => setUsername(target.value)}
-          />
+  const loginForm = () => {
+    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
+    const showWhenVisible = { display: loginVisible ? '' : 'none' }
+
+    return (
+      <div>
+        <div style={hideWhenVisible}>
+          <button onClick={() => setLoginVisible(true)}>log in</button>
         </div>
-        <div>
-          password
-          <input
-            type="password"
-            value={password}
-            name="Password"
-            onChange={({ target }) => setPassword(target.value)}
+        <div style={showWhenVisible}>
+          <LoginForm
+            username={username}
+            password={password}
+            handleUsernameChange={({ target }) => setUsername(target.value)}
+            handlePasswordChange={({ target }) => setPassword(target.value)}
+            handleSubmit={handleLogin}
           />
+          <button onClick={() => setLoginVisible(false)}>cancel</button>
         </div>
-        <button type="submit">login</button>
-      </form>
-    </div>
-  )
+      </div>
+    )
+  }
+
+  const blogForm = () => {
+    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
+    const showWhenVisible = { display: loginVisible ? '' : 'none' }
+
+    return (
+      <div>
+        <div style={hideWhenVisible}>
+          <button onClick={() => setLoginVisible(true)}>New blog</button>
+        </div>
+        <div style={showWhenVisible}>
+        <p>{user.name} logged in</p>
+          <BlogForm
+            onSubmit={addBlog}
+            formData={formData}
+            handleChange={handleBlogChange}
+          />
+          <button onClick={() => setLoginVisible(false)}>Cancel</button>
+        </div>
+      </div>
+    )
+  }
 
   const handleBlogChange = (event) => {
     const { name, value } = event.target;
@@ -142,21 +162,13 @@ const App = () => {
 
   return (
     <div>
+      <h1>Blogs</h1>
 
       <Notification message={notificationMessage} className={notificationClass} />
 
-      {!user && LoginForm()}
-      {user && <div>
-          <h2>Blogs</h2>
-          <p>{user.name} logged in</p>
-          <BlogForm
-            onSubmit={addBlog}
-            formData={formData}
-            handleChange={handleBlogChange}
-          />
-          {blogs.map(blog => <Blog key={blog.id} blog={blog} />)}
-        </div>
-      }
+      {!user ? loginForm() : blogForm()}
+
+      {blogs.map(blog => <Blog key={blog.id} blog={blog} />)}
 
     </div>
   )
