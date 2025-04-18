@@ -153,10 +153,6 @@ const App = () => {
       await blogService.update(blogToUpdate, blog.id)
       const blogs = await blogService.getAll();
       setBlogs(blogs);
-      setNotificationMessage(`The blog ${blog.title}, was updated.`)
-      setTimeout(() => {
-        setNotificationMessage(null)
-      }, 5000)
     } catch (error) {
       setNotificationMessage(`Error updating the blog ${blog.title}`);
       setNotificationClass('error')
@@ -169,6 +165,27 @@ const App = () => {
     
     
   } 
+
+  const removeBlog = async (blog) => {
+    if( window.confirm(`Remove blog ${blog.title} by ${blog.author}?`) ) {
+      try {
+        await blogService.remove(blog)
+        const blogs = await blogService.getAll();
+        setBlogs(blogs);
+        setNotificationMessage(`The blog ${blog.title}, was deleted.`)
+        setTimeout(() => {
+          setNotificationMessage(null)
+        }, 5000)
+      } catch (error) {
+        setNotificationMessage(`Error deleting the blog ${blog.title}`);
+        setNotificationClass('error')
+        setTimeout(() => {
+          setNotificationMessage(null)
+          setNotificationClass('notification')
+        }, 5000);
+      }
+    }
+  }
 
   return (
     <div>
@@ -190,7 +207,13 @@ const App = () => {
 
       {blogs
         .sort((blogA, blogB) => blogB.likes - blogA.likes )
-        .map(blog => <Blog key={blog.id} blog={blog} handleSubmit={updateBlog} />)}
+        .map(blog => <Blog 
+                        key={blog.id} 
+                        blog={blog} 
+                        handleSubmit={updateBlog} 
+                        handleRemove={removeBlog}
+                        user={user}
+                      />)}
 
     </div>
   )
